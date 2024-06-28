@@ -1,0 +1,11 @@
+{
+  "name": "setupbackend",
+  "version": "1.0.0",
+  "description": "setup the backend as a professional approch",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
