@@ -2,15 +2,20 @@
   "name": "setupbackend",
   "version": "1.0.0",
   "description": "setup the backend as a professional approch",
-  "type" : "module",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev" : "src/index.js",
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jatin",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^3.1.4"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.4"
   }
 }
