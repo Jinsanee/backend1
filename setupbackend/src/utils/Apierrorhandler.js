@@ -5,9 +5,9 @@ class Apierrorhandler extends Error {
         statuscode, 
         errors = [], 
         stack = ""
-){                                   // save values in the in the object
-        super(message) // reviewed >>> (super) keyword
-        this.statuscode = statuscode, // these all are properties of Error
+){                                      // save values in the in the object
+        super(message)                  // reviewed >>> (super) keyword
+        this.statuscode = statuscode,   // these all are properties of Error
         this.errors = errors,
         this.success = false,
         this.data = null
