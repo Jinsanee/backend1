@@ -1,11 +1,12 @@
-import express from express
-import cors from cors
-import cookieParser from cookieParser
+import express from "express"
+import cors from "cors"
+import cookieParser  from "cookie-parser"
+
 
 const app = express()
 
 app.use(cors({ 
-    origin: process.env.CORS_ORIGIN, 
+    origin: true, 
     Credentials: true
 }))
 
@@ -17,5 +18,12 @@ app.use(express.static("public"))  // for store file by public enter in app exp 
 app.use(cookieParser()) // can excess the cookie of user browser
 
 
+// route import
+import router from "./route/user.route.js"
+
+//route use by .use funtion
+app.use("/", router)
+
 
 export default app
+// http://localhost:8000/users/register
