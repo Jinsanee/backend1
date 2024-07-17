@@ -1,7 +1,5 @@
-import {fs} from 'fs'
+import fs from 'fs'
 import { v2 as cloudinary } from 'cloudinary';
-
-
 
     // Configuration
     cloudinary.config({ 
@@ -10,18 +8,18 @@ import { v2 as cloudinary } from 'cloudinary';
         api_secret: process.env.COUDINARY_API_SECRET // Click 'View Credentials' below to copy your API secret
     });
 
-    
-    // Upload process
-    const uploader = function  async (localfilepath) {
+     
+    const uploader = async (localfilepath) => {
         try {
             if (!localfilepath) return null;
-             const responce = cloudinary.uploader.upload(localfilepath, { // await is missing in this function
+             const responce = await cloudinary.uploader.upload(localfilepath, { // await is missing in this function
                 resource_type: "auto"
             })
             console.log("file has been uploaded")
             return responce;
         } catch (error) {
-            fs.unlinkSync(localfilepath) // remove the local file that not uploaded on server
+            fs.unlinkSync(localfilepath)
+            console.log("error in cloundinary") // remove the local file that not uploaded on server
             return null;
         }
     }
@@ -29,3 +27,22 @@ import { v2 as cloudinary } from 'cloudinary';
     export {uploader}
    
   
+
+
+
+
+
+      // Upload process
+    // const uploader = function  async (localfilepath) => {
+    //     try {
+    //         if (!localfilepath) return null;
+    //          const responce = await cloudinary.uploader.upload(localfilepath, { // await is missing in this function
+    //             resource_type: "auto"
+    //         })
+    //         console.log("file has been uploaded")
+    //         return responce;
+    //     } catch (error) {
+    //         fs.unlinkSync(localfilepath) // remove the local file that not uploaded on server
+    //         return null;
+    //     }
+    // }

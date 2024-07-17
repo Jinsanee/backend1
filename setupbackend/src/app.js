@@ -22,8 +22,8 @@ app.use(cookieParser()) // can excess the cookie of user browser
 import router from "./route/user.route.js"
 
 //route use by .use funtion
-app.use("/", router)
+app.use("/api/v1/users", router)
 
 
 export default app
-// http://localhost:8000/users/register
+// http://localhost:8000/api/v1/users/register
