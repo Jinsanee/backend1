@@ -1,29 +1,21 @@
-import express from "express"
-import cors from "cors"
-import cookieParser  from "cookie-parser"
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import router from "./route/user.route.js";
 
+const app = express();
 
-const app = express()
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 
-app.use(cors({ 
-    origin: true, 
-    Credentials: true
-}))
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static( "public"));
+app.use(cookieParser());
 
-// app.use // is the configure function by express
-
-app.use(express.json({limit: "16kb"})) // the data add in backend in a limit size & also allow json in backned
-app.use(express.urlencoded({extanded: true, limit: "16kb"})) // url encode by this extanded and limit by side
-app.use(express.static("public"))  // for store file by public enter in app exp -> picture
-app.use(cookieParser()) // can excess the cookie of user browser
-
-
-// route import
-import router from "./route/user.route.js"
-
-//route use by .use funtion
-app.use("/api/v1/users", router)
-
-
-export default app
+app.use("/api/v1/users", router);
+console.log("app file")
+export default app;
 // http://localhost:8000/api/v1/users/register

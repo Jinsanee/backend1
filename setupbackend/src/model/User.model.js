@@ -35,7 +35,7 @@ const UserSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "Video"
         },
-        Avatar:  {
+        avatar:  {
             type:String,
             required: true
         },
