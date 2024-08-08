@@ -4,6 +4,22 @@ import { User } from "../model/User.model.js";
 import { uploader } from "../utils/Cloudinary.js";
 import { reshandler } from "../utils/reshandler.js";
 
+//gernate access and refresh token
+
+const GernateAccessandRefreshToken = async (userid) => {
+   const user = User.findById(userid)
+   const AccessToken = user.accessgenrator()
+   const RefreshToken = user.refreshgenrator()
+
+   user.refreshToken = RefreshToken()
+   await user.save({
+      validateBeforeSave : false
+   })
+   return {AccessToken, RefreshToken}
+}
+
+//REGISTER USER
+
 const userscontrol = asynchandler(async (req, res) => {
    const { fullname, username, email, password } = req.body;
 
@@ -31,6 +47,7 @@ const userscontrol = asynchandler(async (req, res) => {
    }
 
    // Handle avatar file upload
+   // console.log(req.files)
    const avatarLocalPath = req.files.avatar?.[0].path;
    if (!avatarLocalPath) {
       throw new Apierrorhandler("Avatar is required1", 400);
@@ -80,4 +97,73 @@ const userscontrol = asynchandler(async (req, res) => {
    return res.status(200).json(new reshandler(200, createduser, "User registered successfully"));
 });
 
-export default userscontrol;
+//login USER 
+
+const loginuser = asynchandler(async (req, res) => {
+   //req.body data
+   const {username , email, password} = req.body;
+    
+
+   //check username or email
+
+   if (!username || ! email ) {
+      throw new Apierrorhandler("please enter username or email ", 400)
+   }
+   // if (Y) then continue else (N) register please
+   const user = user.findOne( {
+      $or: [{username},{email}]
+   })
+
+   if(!user) {
+      throw new Apierrorhandler("not registered user", 400)
+   }
+
+   // password check
+   const passwordverification =  await user.passwordcheck(password)
+   if(!passwordverification) {
+      throw new Apierrorhandler (" wrong password", 400)
+   }
+   // access and refresh token
+   const {AccessToken, refreshToken} =await GernateAccessandRefreshToken(user._id)
+
+   const loginUserID = await User.findById(user._id).select("-password -refreshToken")
+
+   const options = {    
+      httpOnly: true,
+      secure: true
+   }
+
+   return res.status(200).cookie("accesstoken",AccessToken ,options)
+   .cookie("refreshtoken", refreshToken, options)
+   .json(
+      new reshandler(200, 
+         {
+            AccessToken, refreshToken
+
+         },
+         "login successfully")
+   )
+});
+
+const logoutUser = asynchandler(async(req,res) => {
+   await User.findByIdAndUpdate(req.user._id, {
+      $set: {
+         refreshToken: undefined
+      }
+   },
+   {
+      new: true
+   })
+   const options = {    
+      httpOnly: true,
+      secure: true
+   }
+
+   return res
+   .status(200)
+   .clearCookie("AccessToken", options)
+   .clearCookie("refreshToken", options)
+   .json(new reshandler(200,{},"logout successfully"))
+})
+
+export default {userscontrol, loginuser, logoutUser}
