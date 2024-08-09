@@ -7,15 +7,20 @@ import { reshandler } from "../utils/reshandler.js";
 //gernate access and refresh token
 
 const GernateAccessandRefreshToken = async (userid) => {
-   const user = User.findById(userid)
-   const AccessToken = user.accessgenrator()
-   const RefreshToken = user.refreshgenrator()
-
-   user.refreshToken = RefreshToken()
-   await user.save({
-      validateBeforeSave : false
-   })
-   return {AccessToken, RefreshToken}
+  try {
+    const user = await User.findById(userid)
+    console.log(user._id)
+    const AccessToken = await user.accessgenrator()
+    const refreshToken = await user.refreshgenrator()
+ 
+    user.refreshToken = refreshToken
+    await user.save({
+       validateBeforeSave : false
+    })
+    return {AccessToken, refreshToken}
+  } catch (error) {
+   throw new Apierrorhandler(error.message   , 400)
+  }
 }
 
 //REGISTER USER
@@ -99,27 +104,30 @@ const userscontrol = asynchandler(async (req, res) => {
 
 //login USER 
 
-const loginuser = asynchandler(async (req, res) => {
+const loginUser = asynchandler(async (req, res) => {
    //req.body data
    const {username , email, password} = req.body;
     
 
    //check username or email
 
-   if (!username || ! email ) {
+   if ( !email && !username) {
       throw new Apierrorhandler("please enter username or email ", 400)
    }
    // if (Y) then continue else (N) register please
-   const user = user.findOne( {
+   const user = await User.findOne( {
       $or: [{username},{email}]
    })
 
    if(!user) {
       throw new Apierrorhandler("not registered user", 400)
    }
+   // console.log(user );
 
    // password check
+
    const passwordverification =  await user.passwordcheck(password)
+
    if(!passwordverification) {
       throw new Apierrorhandler (" wrong password", 400)
    }
@@ -129,7 +137,7 @@ const loginuser = asynchandler(async (req, res) => {
    const loginUserID = await User.findById(user._id).select("-password -refreshToken")
 
    const options = {    
-      httpOnly: true,
+      httpOnly: true,   
       secure: true
    }
 
@@ -166,4 +174,7 @@ const logoutUser = asynchandler(async(req,res) => {
    .json(new reshandler(200,{},"logout successfully"))
 })
 
-export default {userscontrol, loginuser, logoutUser}
+export {
+   userscontrol, 
+   loginUser, 
+   logoutUser}

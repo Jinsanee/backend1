@@ -16,6 +16,6 @@ app.use(express.static( "public"));
 app.use(cookieParser());
 
 app.use("/api/v1/users", router);
-console.log("app file")
+// console.log("app file")
 export default app;
 // http://localhost:8000/api/v1/users/register

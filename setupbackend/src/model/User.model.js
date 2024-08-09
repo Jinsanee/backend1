@@ -1,8 +1,9 @@
 import mongoose, {Schema} from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
+import { Apierrorhandler } from "../utils/Apierrorhandler.js";
 
-const UserSchema = new Schema(
+const userSchema = new Schema(
     {
         username: {
             type: String,
@@ -51,31 +52,44 @@ const UserSchema = new Schema(
     }
 )
 
-UserSchema.pre("save", async function(next) {
+userSchema.pre("save", async function(next) {
 if(!this.isModified("password")) return next();
        this.password = await bcrypt.hash(this.password, 10)
+       console.log(this.password)
         next()
-        console.log(this.password)
 })
 
-UserSchema.method.passwordcheck = async function (password) {
-  return await bcrypt.compare(this.password, password)
+// userSchema.methods.passwordcheck = async function (password) {
+//     console.log(password)
+//   return await bcrypt.compare(password ,this.password);
+// }
+
+userSchema.methods.passwordcheck = async function(password){
+    return await bcrypt.compare(password, this.password)
+    // console.log(password)
 }
 
-UserSchema.methods.accessgenrator = function () {
-    return jwt.sign( {
-        _id: this._id,
-        username: this.username,
-        fullname: this.fullname,
-        email: this.email
-    },
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+// userSchema.method('passwordchecks',async function () {
+//     return await bcrypt.compare(password, this.password)
+//   })
+
+userSchema.methods.accessgenrator = async function () {
+    try {
+        return jwt.sign({
+            _id: this._id,
+            // username: this.username,
+            // fullname: this.fullname,
+            // email: this.email
+        }, process.env.ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+            }
+        )
+    } catch (error) {
+        throw new Apierrorhandler(error.message, 404)
     }
-)
 }
-UserSchema.methods.refreshgenrator = function () {
+userSchema.methods.refreshgenrator = function () {
     return jwt.sign( {
         _id: this._id,
     },
@@ -86,7 +100,7 @@ UserSchema.methods.refreshgenrator = function () {
 )   
 }
 
-export const User = mongoose.model("User", UserSchema)
+export const User = mongoose.model("User", userSchema)
 
 
 
