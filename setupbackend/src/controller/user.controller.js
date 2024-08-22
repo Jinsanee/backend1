@@ -5,6 +5,8 @@ import { uploader } from "../utils/Cloudinary.js";
 import { reshandler } from "../utils/reshandler.js";
 import jwt from "jsonwebtoken";
 import { json } from "express";
+import mongoose from "mongoose";
+
 
 //gernate access and refresh token
 const GernateAccessandRefreshToken = async (userid) => {
@@ -375,9 +377,56 @@ const GetUserChannalProfile = asynchandler(async(req,res) => {
    .json(new reshandler(200,channal[0], "channal data fetch successfully" ))
 })
 
-//watchhistory
+//WatchHistory
+const VideosWatchHistory = asynchandler(async(req,res) => {
+   const user = await User.aggregate([
+      {
+         $match: mongoose.Types.ObjectId(req.user._id)
+      },{
+         $lookup: {
+            from: "videos",
+            localField: "watchhistory",
+            foreignField: "_id",
+            as: "owner",
+
+            pipeline: [
+               {
+                  $lookup: {
+                     from: "users",
+                     localField: "owner",
+                     foreignField: "_id",
+                     as: "owner",
+                     pipeline: [
+                        {
+                           $project: {
+                              fullname: 1,
+                              username: 1,
+                              avatar: 1
+                           }
+                        },
+                        {
+                           $addFields: {
+                              owner: {
+                                 $fisrt: "$owner"
+                              }
+                           }
+                         
+                        }
+                     ]
+                  }
+               }
+            ]
+         }
+      }
+   ])
+
+   return res
+   .status(200)
+   .json( new reshandler(200, user[0].watchhistory , "wach history fetch succesfully" ) )
+})
 
 //likes and cmts
+const LikesCount = asynchandler(async(req,res) => {})
 
 export {
    userscontrol, 
@@ -389,5 +438,7 @@ export {
    updateAccountDetails,
    Avatarupdate,
    Coverimageupdate,
-   GetUserChannalProfile
+   GetUserChannalProfile,
+   VideosWatchHistory,
+   LikesCount
 }
