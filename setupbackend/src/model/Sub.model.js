@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const SubcriptionModelSchema = new Schema( {
     Subcriber: {
-        types: Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref:    "User"
     }, 
     channal: {
@@ -13,7 +13,6 @@ const SubcriptionModelSchema = new Schema( {
     timestamps: true
 }
 )
-
 
 
 export const Subcription = mongoose.model("Subcription" ,SubcriptionModelSchema)

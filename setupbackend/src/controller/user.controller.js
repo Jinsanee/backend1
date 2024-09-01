@@ -4,7 +4,6 @@ import { User } from "../model/User.model.js";
 import { uploader } from "../utils/Cloudinary.js";
 import { reshandler } from "../utils/reshandler.js";
 import jwt from "jsonwebtoken";
-import { json } from "express";
 import mongoose from "mongoose";
 
 
@@ -317,116 +316,121 @@ const Coverimageupdate = asynchandler(async(req,res) => {
 const GetUserChannalProfile = asynchandler(async(req,res) => {
    const {username} = req.params
 
-   if(!username?.trim) {
-      throw new Apierrorhandler("username don't get it", 403)
-   }
-
-   const channal = await User.aggregate([
-      {
-         $match:{ 
-            username: username?.toLowerCase
-         }
-      },{
-         $lookup: {
-            from: "subcriptions",
-            localfield: "_id",
-            foreignField: "channal",
-            as: "subscribers"
-         }
-      },{
-         $lookup: {
-            from: "subcriptions",
-            localField: "_id",
-            foreignField: "subscriber",
-            as: "subscribedTo"
-         }
-      }, {
-         $addFields: {
-            subscriberscount: {
-               $size: "$subscribers"
-            },
-            channalsubscriberdcount: {
-               $size: "$subscribedTo"
-            },
-            isSubscriberd: {
-               $cond: {
-                  if: {$in: [req.user?._id, "$subscribers.subscriber"]},
-                  then: true,
-                  else: false
-               }     
+   try {
+      if(!username?.trim()) {
+         throw new Apierrorhandler("username don't get it", 404)
+      }
+   
+      const channal = await User.aggregate([
+         {
+            $match:{ 
+               username: username?.toLowerCase()
+            }
+         },{
+            $lookup: {
+               from: "subcriptions",
+               localfield: "_id",
+               foreignField: "channal",
+               as: "subscribers"
+            }
+         },{
+            $lookup: {
+               from: "subcriptions",
+               localField: "_id",
+               foreignField: "subscriber",
+               as: "subscribedTo"
+            }
+         }, {
+            $addFields: {
+               subscriberscount: {
+                  $size: "$subscribers"
+               },
+               channalsubscriberdcount: {
+                  $size: "$subscribedTo"
+               },
+               isSubscriberd: {
+                  $cond: {
+                     if: {$in: [req.user?._id, "$subscribers.subscriber"]},
+                     then: true,
+                     else: false
+                  }     
+               }
+            }
+         }, {
+            $project: {
+               fullname: 1,
+               username: 1,
+               email: 1,
+               channalsubscriberdcount: 1,
+               subscriberscount: 1,
+               avatar: 1,
+               coverimg: 1
             }
          }
-      }, {
-         $project: {
-            fullname: 1,
-            username: 1,
-            email: 1,
-            channalsubscriberdcount: 1,
-            subscriberscount: 1,
-            avatar: 1,
-            coverimg: 1
+      ])
+         //console.log(channal)
+         if(!channal?.length) {
+            throw new Apierrorhandler("channal dont fetched", 404)
          }
-      }
-   ])
-      //console.log(channal)
-      if(!channal?.length) {
-         throw new Apierrorhandler("channal dont fetched", 403)
-      }
-   return res
-   .status(200)
-   .json(new reshandler(200,channal[0], "channal data fetch successfully" ))
+      return res
+      .status(200)
+      .json(new reshandler(200,channal[0], "channal data fetch successfully" ))
+   } catch (error) {
+      throw new Apierrorhandler(error, 408)
+   }
 })
 
 //WatchHistory
 const VideosWatchHistory = asynchandler(async(req,res) => {
-   const user = await User.aggregate([
-      {
-         $match: mongoose.Types.ObjectId(req.user._id)
-      },{
-         $lookup: {
-            from: "videos",
-            localField: "watchhistory",
-            foreignField: "_id",
-            as: "owner",
-
-            pipeline: [
-               {
-                  $lookup: {
-                     from: "users",
-                     localField: "owner",
-                     foreignField: "_id",
-                     as: "owner",
-                     pipeline: [
-                        {
-                           $project: {
-                              fullname: 1,
-                              username: 1,
-                              avatar: 1
-                           }
-                        },
-                        {
-                           $addFields: {
-                              owner: {
-                                 $fisrt: "$owner"
+   try {
+      const user = await User.aggregate([
+         {
+            $match: new mongoose.Types.ObjectId(req.user._id)
+         },{
+            $lookup: {
+               from: "videos",
+               localField: "watchhistory",
+               foreignField: "_id",
+               as: "owner",
+   
+               pipeline: [
+                  {
+                     $lookup: {
+                        from: "users",
+                        localField: "owner",
+                        foreignField: "_id",
+                        as: "owner",
+                        pipeline: [
+                           {
+                              $project: {
+                                 fullname: 1,
+                                 username: 1,
+                                 avatar: 1
                               }
+                           },
+                           {
+                              $addFields: {
+                                 owner: {
+                                    $fisrt: "$owner"
+                                 }
+                              }
+                            
                            }
-                         
-                        }
-                     ]
+                        ]
+                     }
                   }
-               }
-            ]
+               ]
+            }
          }
-      }
-   ])
-
-   return res
-   .status(200)
-   .json( new reshandler(200, user[0].watchhistory , "wach history fetch succesfully" ) )
+      ])
+   
+      return res
+      .status(200)
+      .json( new reshandler(200, user[0].watchhistory , "wach history fetch succesfully" ) )
+   } catch (error) {
+      throw new Apierrorhandler(error,403)
+   }
 })
-
-//likes and cmts
-const LikesCount = asynchandler(async(req,res) => {})
 
 export {
    userscontrol, 
@@ -440,5 +444,4 @@ export {
    Coverimageupdate,
    GetUserChannalProfile,
    VideosWatchHistory,
-   LikesCount
 }
