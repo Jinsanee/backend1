@@ -16,7 +16,8 @@ const VideoSchema = new Schema (
             type: String,
             required: true
         },
-        discreption: { type: String,
+        discreption: { 
+            type: String,
             required: true
         },
         duraction : {
