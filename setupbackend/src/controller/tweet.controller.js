@@ -63,8 +63,13 @@ const DeleteTweet = asynchandler(async(req,res) => {
 })
 
 // GET User Tweet : <PENDING>
+const GetuserTweet = asynchandler(async(req,res) => {
+
+})
+
 
 export {createTweet,
     UpdateTweet,
-    DeleteTweet
+    DeleteTweet,
+    GetuserTweet
 }

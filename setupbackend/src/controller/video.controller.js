@@ -7,6 +7,66 @@ import mongoose, { isValidObjectId } from "mongoose";
 
 //video file > upload > cloudenry > link , duration , title , description > view > isPublished > owner
 
+const getallvideos = asynchandler(async(req,res) => {
+        const { 
+            page = 1, 
+            limit = 10, 
+            query = "", 
+            sortBy = "createdAt", 
+            sortType = "desc", 
+            userId 
+        } = req.query;
+    
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+    
+        // Set up the filter
+        let filter = {};
+    
+        if (query) {
+            // Search for videos by title, description, or other fields
+            filter = {
+                $or: [
+                    { title: { $regex: query, $options: "i" } }, // Case insensitive search for title
+                    { description: { $regex: query, $options: "i" } } // Case insensitive search for description
+                ]
+            };
+        }
+    
+        if (userId) {
+            // Optionally filter by the user who uploaded the video
+            filter.owner = userId;
+        }
+    
+        // Sorting options
+        let sortOptions = {};
+        if (sortBy) {
+            sortOptions[sortBy] = sortType === "asc" ? 1 : -1; // Ascending or descending sort
+        }
+    
+        try {
+            // Get total count of matching videos
+            const totalVideos = await Video.countDocuments(filter);
+    
+            // Fetch videos with pagination, filtering, and sorting
+            const videos = await Video.find(filter)
+                .sort(sortOptions)
+                .skip((pageNumber - 1) * limitNumber)
+                .limit(limitNumber);
+    
+            // Send response
+            res.status(200).json({
+                totalVideos,
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalVideos / limitNumber),
+                videos
+            });
+        } catch (error) {
+            res.status(500).json({ message: "Error fetching videos", error });
+        }
+})
+
 const videoupload = asynchandler(async(req,res) =>  {
     const { title, discreption } = req.body
 
@@ -139,12 +199,11 @@ const togglevideostatus = asynchandler(async(req,res) => {
             .json( new reshandler(200,{UpdateToggleVideo}, "toggle update successfully"))
 })
 
-
-
 export {
     videoupload,
     getVideoId,
     upadateVideodetails,
     deleteVideo,
-    togglevideostatus
+    togglevideostatus,
+    getallvideos
 }
