@@ -70,7 +70,7 @@ const videoslike = asynchandler(async (req, res) => {
     .json(new reshandler(200, { Videolike }, "video liked by User"));
 });
 
-const likevideos = asynchandler(async (req, res) => {
+const likedvideos = asynchandler(async (req, res) => {
   const like = await likes
     .find({
       owner: req.user?._id,
@@ -99,7 +99,6 @@ const likevideos = asynchandler(async (req, res) => {
   );
 });
 
-
 //NOT COMPLETED
 const liketweets = asynchandler(async (req, res) => {
   const tweet = await likes
@@ -109,6 +108,7 @@ const liketweets = asynchandler(async (req, res) => {
     })
     .populate("tweet");
 
+    
 
 });
 
@@ -118,7 +118,7 @@ export {
   commentlike,
   tweetlike,
   videoslike,
-  likevideos,
+  likedvideos,
   liketweets,
   likecomments,
 };
