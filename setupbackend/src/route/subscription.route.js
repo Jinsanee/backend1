@@ -10,8 +10,8 @@ import {
 const router = Router()
 
 router.use(verifyJWT);
-router.route("/:channalId").post(toggleSubscription)
-router.route("/:channalId").post(subscriberList)
-router.route("/:subscriberId").post(channalList)
+router.route("/:channalId").post(toggleSubscription).get(subscriberList)
+
+router.route("/:subscriberId").get(channalList)
 
 export default router

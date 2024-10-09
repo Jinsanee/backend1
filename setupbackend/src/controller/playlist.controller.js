@@ -6,7 +6,7 @@ import { isValidObjectId } from "mongoose"
 
 const createPlaylist = asynchandler(async(req,res) => {
     const {name , description} = req.body
-    if(!name || !discription) {
+    if(!name || !description) {
         throw new Apierrorhandler("name and discription is not mention" , 404)
     }
 
